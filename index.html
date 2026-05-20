@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>520 快乐 - 致我最爱的你</title>
+    <style>
+        /* 全局样式 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000; /* 纯黑背景，衬托特效 */
+            font-family: "Microsoft YaHei", cursive, sans-serif;
+        }
+
+        /* 背景画布 */
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* 内容容器 */
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            text-align: center;
+            pointer-events: none; /* 让鼠标事件穿透到画布 */
+        }
+
+        /* CSS 绘制爱心 */
+        .heart {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(-45deg, #ff0055, #ff5e00);
+            transform: rotate(-45deg);
+            box-shadow: 0 0 40px #ff0055, 0 0 80px #ff0055; /* 霓虹光晕 */
+            animation: beat 1.2s infinite ease-in-out;
+            margin: 0 auto 50px;
+        }
+
+        .heart::before,
+        .heart::after {
+            content: "";
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: inherit;
+            border-radius: 50%;
+            box-shadow: inherit;
+        }
+
+        .heart::before {
+            top: -50px;
+            left: 0;
+        }
+
+        .heart::after {
+            top: 0;
+            left: 50px;
+        }
+
+        /* 爱心跳动动画 */
+        @keyframes beat {
+            0% { transform: scale(1) rotate(-45deg); box-shadow: 0 0 40px #ff0055; }
+            50% { transform: scale(1.3) rotate(-45deg); box-shadow: 0 0 70px #ff0055, 0 0 100px #ff5e00; }
+            100% { transform: scale(1) rotate(-45deg); box-shadow: 0 0 40px #ff0055; }
+        }
+
+        /* 文字样式 */
+        .text {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff0055, 0 0 40px #ff0055;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .sub-text {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            color: #ffcccc;
+            opacity: 0.8;
+            letter-spacing: 2px;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #fff, 0 0 20px #ff0055; }
+            to { text-shadow: 0 0 20px #fff, 0 0 30px #ff0055, 0 0 50px #ff5e00; }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .heart { width: 60px; height: 60px; }
+            .heart::before, .heart::after { width: 60px; height: 60px; top: -30px; }
+            .heart::after { left: 30px; }
+            .text { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景粒子画布 -->
+    <canvas id="canvas"></canvas>
+
+    <!-- 中间内容 -->
+    <div class="container">
+        <div class="heart"></div>
+        <div class="text">520 快乐</div>
+        <!-- 你可以在这里修改你想对她说的话 -->
+        <div class="sub-text">致我最爱的女孩：代码有终点，爱你无期限</div>
+    </div>
+
+    <script>
+        // 粒子特效逻辑
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+
+        // 初始化画布大小
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 粒子类
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 1.5; // 水平速度
+                this.vy = (Math.random() - 0.5) * 1.5; // 垂直速度
+                this.size = Math.random() * 2 + 1;
+                // 随机颜色：粉色到紫色系
+                const colors = ['#ff0055', '#ff5e00', '#ff9a9e', '#fad0c4'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // 边界反弹
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        // 初始化粒子
+        function initParticles() {
+            particles = [];
+            const particleCount = Math.min(window.innerWidth / 5, 150); // 根据屏幕宽度决定数量
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        // 动画循环
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制连线
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(255, 0, 85, ${1 - distance / 100})`; // 连线颜色
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        initParticles();
+        animate();
+    </script>
+</body>
+</html>
