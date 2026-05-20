@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>520 快乐 - 致我最爱的你</title>
     <style>
         /* 全局样式 */
@@ -12,7 +12,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #000; /* 纯黑背景，衬托特效 */
+            background: #000;
             font-family: "Microsoft YaHei", cursive, sans-serif;
         }
 
@@ -32,9 +32,9 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 2;
+            z-index: 10;
             text-align: center;
-            pointer-events: none; /* 让鼠标事件穿透到画布 */
+            pointer-events: none;
         }
 
         /* CSS 绘制爱心 */
@@ -44,7 +44,7 @@
             height: 100px;
             background: linear-gradient(-45deg, #ff0055, #ff5e00);
             transform: rotate(-45deg);
-            box-shadow: 0 0 40px #ff0055, 0 0 80px #ff0055; /* 霓虹光晕 */
+            box-shadow: 0 0 40px #ff0055, 0 0 80px #ff0055;
             animation: beat 1.2s infinite ease-in-out;
             margin: 0 auto 50px;
         }
@@ -60,15 +60,8 @@
             box-shadow: inherit;
         }
 
-        .heart::before {
-            top: -50px;
-            left: 0;
-        }
-
-        .heart::after {
-            top: 0;
-            left: 50px;
-        }
+        .heart::before { top: -50px; left: 0; }
+        .heart::after { top: 0; left: 50px; }
 
         /* 爱心跳动动画 */
         @keyframes beat {
@@ -110,6 +103,14 @@
 </head>
 <body>
 
+    <!-- 背景音乐：请将 src 替换为你想要的 mp3 链接 -->
+    <audio autoplay="autoplay" loop="loop" id="bgm">
+    <!-- 优先加载 M4A，音质更好 -->
+    <source src="love.m4a" type="audio/mp4">
+    <!-- 如果浏览器不支持 M4A，会自动回退加载 MP3 -->
+    <source src="love.mp3" type="audio/mpeg">
+</audio>
+
     <!-- 背景粒子画布 -->
     <canvas id="canvas"></canvas>
 
@@ -122,14 +123,18 @@
     </div>
 
     <script>
-        // 粒子特效逻辑
+        // 解决浏览器自动播放音乐限制：点击屏幕任意位置触发播放
+        document.body.addEventListener('click', () => {
+            const bgm = document.getElementById('bgm');
+            if (bgm.paused) bgm.play();
+        }, { once: true });
+
+        // --- 1. 星空粒子背景特效逻辑 ---
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-
         let width, height;
         let particles = [];
 
-        // 初始化画布大小
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
@@ -137,15 +142,13 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // 粒子类
         class Particle {
             constructor() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 1.5; // 水平速度
-                this.vy = (Math.random() - 0.5) * 1.5; // 垂直速度
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = (Math.random() - 0.5) * 1.5;
                 this.size = Math.random() * 2 + 1;
-                // 随机颜色：粉色到紫色系
                 const colors = ['#ff0055', '#ff5e00', '#ff9a9e', '#fad0c4'];
                 this.color = colors[Math.floor(Math.random() * colors.length)];
             }
@@ -153,8 +156,6 @@
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-
-                // 边界反弹
                 if (this.x < 0 || this.x > width) this.vx *= -1;
                 if (this.y < 0 || this.y > height) this.vy *= -1;
             }
@@ -167,32 +168,26 @@
             }
         }
 
-        // 初始化粒子
         function initParticles() {
             particles = [];
-            const particleCount = Math.min(window.innerWidth / 5, 150); // 根据屏幕宽度决定数量
+            const particleCount = Math.min(window.innerWidth / 5, 150);
             for (let i = 0; i < particleCount; i++) {
                 particles.push(new Particle());
             }
         }
 
-        // 动画循环
         function animate() {
             ctx.clearRect(0, 0, width, height);
-            
-            // 绘制连线
             for (let i = 0; i < particles.length; i++) {
                 particles[i].update();
                 particles[i].draw();
-
                 for (let j = i; j < particles.length; j++) {
                     const dx = particles[i].x - particles[j].x;
                     const dy = particles[i].y - particles[j].y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-
                     if (distance < 100) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(255, 0, 85, ${1 - distance / 100})`; // 连线颜色
+                        ctx.strokeStyle = `rgba(255, 0, 85, ${1 - distance / 100})`;
                         ctx.lineWidth = 0.5;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
@@ -205,6 +200,54 @@
 
         initParticles();
         animate();
+
+        // --- 2. 满屏爱心雨特效 ---
+        function createFallingHeart() {
+            const heart = document.createElement('div');
+            heart.innerHTML = '❤️';
+            heart.style.position = 'absolute';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.top = '-50px';
+            heart.style.fontSize = Math.random() * 20 + 15 + 'px';
+            heart.style.opacity = Math.random() * 0.5 + 0.3;
+            heart.style.zIndex = '0';
+            heart.style.animation = `fall ${Math.random() * 3 + 3}s linear forwards`;
+            document.body.appendChild(heart);
+            setTimeout(() => { heart.remove(); }, 6000);
+        }
+
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes fall {
+                to { transform: translateY(110vh) rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+        setInterval(createFallingHeart, 300);
+
+        // --- 3. 鼠标/手指点击互动特效 ---
+        document.addEventListener('click', (e) => {
+            const heart = document.createElement('div');
+            heart.innerHTML = '💖';
+            heart.style.position = 'absolute';
+            heart.style.left = e.clientX + 'px';
+            heart.style.top = e.clientY + 'px';
+            heart.style.fontSize = '30px';
+            heart.style.pointerEvents = 'none';
+            heart.style.transform = 'translate(-50%, -50%)';
+            heart.style.animation = 'clickHeart 1s ease-out forwards';
+            document.body.appendChild(heart);
+            setTimeout(() => { heart.remove(); }, 1000);
+        });
+
+        const clickStyle = document.createElement('style');
+        clickStyle.innerHTML = `
+            @keyframes clickHeart {
+                0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+                100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(clickStyle);
     </script>
 </body>
 </html>
