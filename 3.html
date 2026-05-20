@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>520心动限定 | 致我最爱的女孩</title>
+    <!-- 引入轻量级canvas-confetti库，用于绚丽的庆祝特效 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* 避免拖动文字，保持优雅 */
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Dancing Script', 'Pacifico', 'Georgia', 'PingFang SC', 'Microsoft YaHei', cursive, sans-serif;
+            background: linear-gradient(145deg, #ff9a9e 0%, #fad0c4 25%, #fad0c4 50%, #ffdde1 75%, #fbc2eb 100%);
+            background-attachment: fixed;
+            position: relative;
+        }
+
+        /* 底层Canvas —— 飘落的爱心粒子层 (位于文字下层) */
+        #heartCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            pointer-events: none;  /* 让粒子层不干扰点击，点击事件穿透到上层div */
+            z-index: 1;
+        }
+
+        /* 主内容层 — 惊喜文字卡片 */
+        .love-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            backdrop-filter: blur(3px);
+            pointer-events: auto;  /* 可点击，触发惊喜特效 */
+            cursor: pointer;
+            padding: 1.5rem;
+        }
+
+        /* 半透磨砂卡片效果，增强文字可读性但又不遮住浪漫粒子 */
+        .message-card {
+            background: rgba(255, 245, 245, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 68px;
+            padding: 2.5rem 3rem;
+            box-shadow: 0 25px 45px rgba(255, 80, 120, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.5) inset, 0 0 0 4px rgba(255, 200, 200, 0.3) inset;
+            transition: all 0.4s ease;
+            animation: floatCard 3s ease-in-out infinite;
+            max-width: 85vw;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* 卡片浮动效果 */
+        @keyframes floatCard {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* 主标题 520 快乐 */
+        .main-title {
+            font-size: clamp(3.2rem, 15vw, 6rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #FF2E63, #FF8C42, #FF2E63);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 5px 20px rgba(255, 46, 99, 0.4);
+            animation: shine 2.5s linear infinite, heartbeat 1.5s ease-in-out infinite;
+            letter-spacing: 4px;
+            margin-bottom: 1rem;
+        }
+
+        /* 炫光流动效果 */
+        @keyframes shine {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        /* 心跳缩放 */
+        @keyframes heartbeat {
+            0% { transform: scale(1); text-shadow: 0 0 8px #ff4d6d; }
+            50% { transform: scale(1.08); text-shadow: 0 0 25px #ff1e4d, 0 0 35px #ffb3c6; }
+            100% { transform: scale(1); text-shadow: 0 0 8px #ff4d6d; }
+        }
+
+        /* 副标题 */
+        .sub-message {
+            font-size: clamp(1.2rem, 5vw, 2rem);
+            font-weight: 500;
+            color: #b13e5c;
+            background: rgba(255, 235, 240, 0.7);
+            display: inline-block;
+            padding: 0.3rem 1.2rem;
+            border-radius: 60px;
+            margin: 0.8rem 0;
+            backdrop-filter: blur(4px);
+            font-family: 'Dancing Script', 'Pacifico', cursive;
+            letter-spacing: 2px;
+        }
+
+        /* 核心浪漫诗句 */
+        .love-quote {
+            font-size: clamp(1.3rem, 6vw, 2.1rem);
+            font-weight: 600;
+            color: #c2185b;
+            margin: 1rem 0 0.6rem 0;
+            background: linear-gradient(120deg, #d43f6b, #ff8c94);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 6px rgba(194, 24, 91, 0.2);
+            animation: gentleGlow 2s infinite alternate;
+        }
+
+        @keyframes gentleGlow {
+            0% { text-shadow: 0 0 2px #ffb7c5; opacity: 0.9; }
+            100% { text-shadow: 0 0 12px #ff4d6d; opacity: 1; }
+        }
+
+        /* 签名小行 */
+        .signature {
+            margin-top: 1.8rem;
+            font-size: 0.9rem;
+            color: #ff6f91;
+            letter-spacing: 2px;
+            font-weight: 300;
+            border-top: 1px dashed rgba(255, 110, 130, 0.5);
+            display: inline-block;
+            padding-top: 0.8rem;
+            font-style: italic;
+        }
+
+        /* 提示点击彩蛋 */
+        .click-hint {
+            position: absolute;
+            bottom: 28px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #fff0f0;
+            background: rgba(0, 0, 0, 0.2);
+            width: fit-content;
+            margin: 0 auto;
+            padding: 6px 18px;
+            border-radius: 60px;
+            backdrop-filter: blur(5px);
+            pointer-events: none;
+            z-index: 3;
+            font-weight: 400;
+            letter-spacing: 1px;
+            animation: blinkHint 1.8s infinite;
+        }
+
+        @keyframes blinkHint {
+            0% { opacity: 0.5; transform: scale(0.98);}
+            100% { opacity: 1; transform: scale(1);}
+        }
+
+        /* 响应式优化：小屏幕内边距调整 */
+        @media (max-width: 550px) {
+            .message-card {
+                padding: 1.8rem 1.8rem;
+                border-radius: 40px;
+            }
+            .signature {
+                font-size: 0.7rem;
+            }
+            .sub-message {
+                font-size: 1rem;
+            }
+        }
+
+        /* 浮动小惊喜——不需要额外dom，完全靠canvas粒子与彩蛋效果，但是加一个悬浮光晕 */
+        .message-card:hover {
+            transform: scale(1.01);
+            box-shadow: 0 35px 55px rgba(255, 60, 100, 0.5);
+            transition: all 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- canvas粒子层 用于绘制飘落爱心/花朵/星星等 -->
+    <canvas id="heartCanvas"></canvas>
+
+    <!-- 主要浪漫卡片区域，点击即可触发炫彩礼花+爱心爆炸 -->
+    <div class="love-container" id="loveTrigger">
+        <div class="message-card">
+            <div class="main-title">520 快乐</div>
+            <div class="sub-message">✨ 致我亲爱的女孩吕瑞寒 ✨</div>
+            <div class="love-quote">💻 生命有终点，爱你无期限 💖</div>
+            <div class="signature">—— 属于你的专属浪漫，每秒心跳为你编写 ——</div>
+        </div>
+        <div class="click-hint">💗 轻触任意位置，收获漫天心动 💗</div>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- 浪漫飘落粒子系统 (爱心、花朵、星星) ----------
+            const canvas = document.getElementById('heartCanvas');
+            let ctx = canvas.getContext('2d');
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            
+            // 粒子数组
+            let particles = [];
+            const MAX_PARTICLES = 380;      // 性能与丰富度平衡
+            const GENERATE_RATE = 0.27;      // 每帧生成概率
+            
+            // 浪漫符号库 (心形、花、星、祝福小物件)
+            const romanticSymbols = ['❤️', '💖', '🌸', '🌹', '✨', '💕', '💗', '🌺', '⭐', '💓', '🌼', '🎀', '💝', '💋'];
+            
+            // 颜色调色盘 (暖色/浪漫粉系/红系)
+            const colorPalette = [
+                '#FF3366', '#FF6B8B', '#FF8DA1', '#FFB7C5', '#FF5E7E', 
+                '#E8436E', '#FF6F61', '#FF9F4A', '#FFACB7', '#FF4D6D', 
+                '#FAA0A0', '#FFB3BA', '#FFC0CB', '#FF99CC'
+            ];
+            
+            // 粒子类: 位置、速度、大小、符号、颜色、透明度、生命周期
+            class FallingHeart {
+                constructor(x, y, vx, vy, size, symbol, color, opacity = 0.9) {
+                    this.x = x;
+                    this.y = y;
+                    this.vx = vx;
+                    this.vy = vy;
+                    this.size = size;       // 字体大小(px)
+                    this.symbol = symbol;
+                    this.color = color;
+                    this.opacity = opacity;
+                    this.rotation = 0;       // 虽然字符旋转比较复杂，但留下可以轻微随机飘动
+                    this.wobble = Math.random() * Math.PI * 2;
+                    this.wobbleSpeed = 0.02 + Math.random() * 0.03;
+                    this.life = 1.0;          // 完整不透明度由opacity负责，保留以后渐变
+                }
+                
+                update() {
+                    // 水平飘移 + 细微正弦摆动增加柔美感
+                    this.x += this.vx + Math.sin(Date.now() * 0.003 + this.wobble) * 0.2;
+                    this.y += this.vy;
+                    // 略微增加空气阻力感 (轻微减速，无限浪漫)
+                    this.vy += 0.02;
+                    // 边界移除: 超出底部 或 超出左右(超出太远就消失)
+                    if (this.y > height + 80 || this.x < -80 || this.x > width + 80) {
+                        return false;
+                    }
+                    // 超出顶部一般不消失但几乎不会，保留
+                    if (this.y < -100) return false;
+                    return true;
+                }
+                
+                draw(ctx) {
+                    ctx.save();
+                    ctx.font = `${this.size}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", system-ui, sans-serif`;
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = "rgba(255, 80, 120, 0.7)";
+                    ctx.globalAlpha = this.opacity * (0.7 + 0.3 * Math.sin(Date.now() * 0.005 + this.wobble));
+                    ctx.fillStyle = this.color;
+                    // 稍微绕Z轴旋转画布? 字符简单但加上轻微倾斜效果更灵巧
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(Math.sin(Date.now() * 0.002 + this.wobble) * 0.2);
+                    ctx.fillText(this.symbol, 0, 0);
+                    ctx.restore();
+                }
+            }
+            
+            // 初始化粒子 (预先生成一些浪漫粒子，让一开始就很热闹)
+            function initParticles(count) {
+                particles = [];
+                for (let i = 0; i < count; i++) {
+                    const randX = Math.random() * width;
+                    const randY = Math.random() * height * 0.8;  // 避免集中顶部
+                    const vx = (Math.random() - 0.5) * 0.5;
+                    const vy = 0.8 + Math.random() * 1.8;
+                    const size = 18 + Math.random() * 28;  // 大小变化更生动
+                    const symbol = romanticSymbols[Math.floor(Math.random() * romanticSymbols.length)];
+                    const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                    const opacity = 0.6 + Math.random() * 0.4;
+                    const particle = new FallingHeart(randX, randY, vx, vy, size, symbol, color, opacity);
+                    particles.push(particle);
+                }
+            }
+            
+            // 生成新粒子（控制总数）
+            function addParticleIfNeeded() {
+                if (particles.length < MAX_PARTICLES && Math.random() < GENERATE_RATE) {
+                    const x = Math.random() * width;
+                    const y = -20;   // 从顶部落下
+                    const vx = (Math.random() - 0.5) * 0.6;
+                    const vy = 0.6 + Math.random() * 1.6;
+                    const size = 18 + Math.random() * 30;
+                    const symbol = romanticSymbols[Math.floor(Math.random() * romanticSymbols.length)];
+                    const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                    const opacity = 0.65 + Math.random() * 0.35;
+                    const newHeart = new FallingHeart(x, y, vx, vy, size, symbol, color, opacity);
+                    particles.push(newHeart);
+                }
+                // 额外特殊时刻：有时同时生成两个增加欢愉感 (10%概率多一个)
+                if (particles.length < MAX_PARTICLES - 5 && Math.random() < 0.12) {
+                    const x = Math.random() * width;
+                    const y = -10;
+                    const vx = (Math.random() - 0.5) * 0.7;
+                    const vy = 0.7 + Math.random() * 1.8;
+                    const size = 20 + Math.random() * 28;
+                    const symbol = romanticSymbols[Math.floor(Math.random() * romanticSymbols.length)];
+                    const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                    particles.push(new FallingHeart(x, y, vx, vy, size, symbol, color, 0.8));
+                }
+            }
+            
+            // 更新并绘制所有粒子
+            function updateAndDrawParticles() {
+                if (!ctx) return;
+                ctx.clearRect(0, 0, width, height);
+                // 保留canvas透明背景，下层body渐变完全透出
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    const isAlive = p.update();
+                    if (isAlive) {
+                        p.draw(ctx);
+                    } else {
+                        particles.splice(i, 1);
+                        i--;
+                    }
+                }
+                // 动态补充粒子维持浪漫密度
+                addParticleIfNeeded();
+                // 如果粒子意外过少 (比如清空或尺寸剧变)，补充一些
+                if (particles.length < 100) {
+                    for (let i = 0; i < 20; i++) {
+                        const randX = Math.random() * width;
+                        const randY = Math.random() * height * 0.6;
+                        const vx = (Math.random() - 0.5) * 0.5;
+                        const vy = 0.6 + Math.random() * 1.5;
+                        const size = 18 + Math.random() * 28;
+                        const symbol = romanticSymbols[Math.floor(Math.random() * romanticSymbols.length)];
+                        const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                        particles.push(new FallingHeart(randX, randY, vx, vy, size, symbol, color, 0.7));
+                    }
+                }
+            }
+            
+            // 动画循环
+            let animationId = null;
+            function animate() {
+                updateAndDrawParticles();
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            // 调整canvas尺寸并重置部分粒子 (避免越界)
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                // 重新初始化粒子布局，防止飞出边界保留浪漫气氛但不清空所有(保留情怀)
+                // 保留现有粒子，只把超出边界的移除
+                if (particles.length > 0) {
+                    for (let i = 0; i < particles.length; i++) {
+                        if (particles[i].x > width + 100 || particles[i].x < -100 || particles[i].y > height + 150) {
+                            particles.splice(i,1);
+                            i--;
+                        }
+                    }
+                }
+                // 如果粒子太少，补充一些新的
+                if (particles.length < 80) {
+                    for (let i = 0; i < 60; i++) {
+                        const randX = Math.random() * width;
+                        const randY = Math.random() * height * 0.7;
+                        const vx = (Math.random() - 0.5) * 0.5;
+                        const vy = 0.8 + Math.random() * 1.7;
+                        const size = 18 + Math.random() * 28;
+                        const symbol = romanticSymbols[Math.floor(Math.random() * romanticSymbols.length)];
+                        const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                        particles.push(new FallingHeart(randX, randY, vx, vy, size, symbol, color, 0.7));
+                    }
+                }
+            }
+            
+            // 启动粒子系统
+            function startParticleSystem() {
+                if (!ctx) return;
+                resizeCanvas();
+                initParticles(140);  // 初始粒子140个，立刻浪漫氛围
+                animate();
+            }
+            
+            // 调整窗口适配
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+            });
+            
+            // ----- 绚丽惊喜特效：彩带 + 爱心炮弹 (canvas-confetti 加强版)------
+            // 1. 一次性多重浪漫效果 (点击触发)
+            function launchSuperRomance() {
+                // 主礼花：大型彩带风暴
+                canvasConfetti({
+                    particleCount: 200,
+                    spread: 120,
+                    origin: { y: 0.6 },
+                    startVelocity: 20,
+                    colors: ['#FF3366', '#FF8DA1', '#FFB7C5', '#FF6B8B', '#FFD966', '#FF99CC'],
+                    decay: 0.9,
+                    ticks: 200
+                });
+                // 从左侧飘落心形纸屑
+                canvasConfetti({
+                    particleCount: 100,
+                    spread: 75,
+                    origin: { x: 0.1, y: 0.5 },
+                    startVelocity: 18,
+                    colors: ['#FF4D6D', '#FF8C94', '#FFB3BA'],
+                    angle: 65,
+                    gravity: 0.6,
+                });
+                // 右侧心形雨
+                canvasConfetti({
+                    particleCount: 100,
+                    spread: 75,
+                    origin: { x: 0.9, y: 0.5 },
+                    startVelocity: 18,
+                    colors: ['#E8436E', '#FF9F4A', '#FAA0A0'],
+                    angle: 115,
+                    gravity: 0.6,
+                });
+                
+                // 第二波延迟爆炸，制造惊喜感
+                setTimeout(() => {
+                    canvasConfetti({
+                        particleCount: 300,
+                        spread: 100,
+                        origin: { y: 0.7, x: 0.5 },
+                        startVelocity: 25,
+                        colors: ['#FF5E7E', '#FFA5B9', '#FFC0CB', '#FF99CC', '#FFB347'],
+                        decay: 0.85,
+                        ticks: 180,
+                        shapes: ['heart', 'circle']  // 心形和圆点混合，但canvas-confetti原生支持心形需要shape? 支持星星和爱心需要配置，但简单形状也很好
+                    });
+                }, 150);
+                
+                // 额外飘落“520”形状的闪烁小效果（模拟数字惊喜）
+                setTimeout(() => {
+                    canvasConfetti({
+                        particleCount: 80,
+                        spread: 45,
+                        origin: { y: 0.5, x: 0.3 },
+                        startVelocity: 12,
+                        angle: 70,
+                        colors: ['#FFC0CB', '#FFE5B4', '#FF99CC']
+                    });
+                    canvasConfetti({
+                        particleCount: 80,
+                        spread: 45,
+                        origin: { y: 0.5, x: 0.7 },
+                        startVelocity: 12,
+                        angle: 110,
+                        colors: ['#FFC0CB', '#FFE5B4', '#FF99CC']
+                    });
+                }, 300);
+                
+                // 动态生成爱心炸弹效果：再利用confetti模拟更密集
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        canvasConfetti({
+                            particleCount: 45,
+                            spread: 55,
+                            origin: { x: Math.random(), y: Math.random() * 0.7 + 0.2 },
+                            startVelocity: 14,
+                            colors: ['#FF2E63', '#FF6F91', '#FF8C42', '#FFB347']
+                        });
+                    }, i * 80);
+                }
+            }
+            
+            // 页面加载后自动来一轮温柔祝贺特效，但不是过度夸张，让人感到被爱意包围
+            function autoWelcomeSpark() {
+                setTimeout(() => {
+                    canvasConfetti({
+                        particleCount: 120,
+                        spread: 70,
+                        origin: { y: 0.5 },
+                        startVelocity: 15,
+                        colors: ['#FF8DA1', '#FFB7C5', '#FF99CC', '#FF6B8B'],
+                        decay: 0.9
+                    });
+                    // 第二次更轻快的小炸裂
+                    setTimeout(() => {
+                        canvasConfetti({
+                            particleCount: 60,
+                            spread: 40,
+                            origin: { y: 0.65, x: 0.2 },
+                            startVelocity: 10,
+                        });
+                        canvasConfetti({
+                            particleCount: 60,
+                            spread: 40,
+                            origin: { y: 0.65, x: 0.8 },
+                            startVelocity: 10,
+                        });
+                    }, 200);
+                }, 600);
+            }
+            
+            // 附加“爱心爆发”的增强: 点击后再加额外全屏心形脉冲
+            function extraHeartExplosion() {
+                // 用canvas-confetti发射大量心形状纸屑（部分浏览器支持）
+                canvasConfetti({
+                    particleCount: 400,
+                    spread: 180,
+                    origin: { y: 0.5 },
+                    startVelocity: 28,
+                    colors: ['#FF3366', '#FF6699', '#FF99CC', '#FFCCDD', '#FF4D6D'],
+                    shapes: ['heart'],
+                    ticks: 300,
+                    gravity: 0.5,
+                    decay: 0.9
+                });
+                // 再加一圈光环状纸屑
+                for(let ang = 0; ang < 360; ang += 45) {
+                    const rad = ang * Math.PI/180;
+                    const dx = Math.cos(rad);
+                    const dy = Math.sin(rad);
+                    canvasConfetti({
+                        particleCount: 30,
+                        angle: ang + 90,
+                        spread: 15,
+                        origin: { x: 0.5 + dx*0.2, y: 0.5 + dy*0.2 },
+                        startVelocity: 18,
+                        colors: ['#FFB7C5', '#FF8DA1', '#FF5E7E'],
+                    });
+                }
+            }
+            
+            // 绑定点击事件: 主容器点击触发双重惊喜，增强互动
+            const triggerZone = document.getElementById('loveTrigger');
+            let clickTimer = null;
+            function onLoveClick(e) {
+                e.stopPropagation();
+                // 立刻释放震撼礼花
+                launchSuperRomance();
+                // 延迟0.1秒再追加一波爱心心形大礼 (双重惊喜)
+                if(clickTimer) clearTimeout(clickTimer);
+                clickTimer = setTimeout(() => {
+                    extraHeartExplosion();
+                    // 再多加随机位置小彩蛋
+                    canvasConfetti({
+                        particleCount: 80,
+                        spread: 35,
+                        origin: { x: Math.random(), y: Math.random() * 0.8 + 0.1 },
+                        startVelocity: 12,
+                        colors: ['#FF6F91', '#FFB347']
+                    });
+                }, 120);
+                // 制造动态视觉: 轻微震动卡片效果css中已附带，不做额外
+            }
+            
+            triggerZone.addEventListener('click', onLoveClick);
+            // 触摸设备同样支持
+            triggerZone.addEventListener('touchstart', onLoveClick, { passive: false });
+            
+            // 页面初始化所有系统
+            function init() {
+                ctx = canvas.getContext('2d');
+                if(ctx) {
+                    startParticleSystem();
+                } else {
+                    console.warn("canvas 不支持");
+                }
+                autoWelcomeSpark(); // 进入页面自动祝福彩带
+                // 额外每30秒自动释放一次小惊喜，让浪漫持续 (但不频繁打扰)
+                setInterval(() => {
+                    if (document.visibilityState === "visible") {
+                        canvasConfetti({
+                            particleCount: 40,
+                            spread: 45,
+                            origin: { y: 0.8 },
+                            startVelocity: 8,
+                            colors: ['#FF99CC', '#FFB7C5', '#FAA0A0'],
+                            decay: 0.9
+                        });
+                    }
+                }, 28000);
+            }
+            
+            init();
+        })();
+    </script>
+</body>
+</html>
